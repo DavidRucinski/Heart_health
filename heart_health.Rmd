@@ -54,14 +54,27 @@ colnames(heart) <- list_names
 
 ```
 
+### Principal Components Analysis: Male & Female
 
-### Male Hearts
+
+#### Log of few variables (PCA is sensitive)
 ```{r}
-# heart_PCA <- prcomp(heart)
-# summary(heart_PCA)
+log.list <- c("Age","RestingBloodPressure", "Cholestrol",  "MaxHeartRateAchivied")
 
-MaleHeart <- subset(heart, Gender == 1)
-FemaleHeart <- subset(heart, Gender == 0)
+ln.heart <- copy(heart)
+
+ln.heart[ , (log.list) := lapply(.SD, log), .SDcols = log.list]
+
+head(ln.heart)
+# head(heart) I needed to change ln.heart to copy(DT), it was referencing it as a pointer would in C
+# thus my original DT heart was being modified as well.
+```
+
+
+#### Male Hearts
+```{r}
+MaleHeart <- subset(ln.heart, Gender == 1)
+FemaleHeart <- subset(ln.heart, Gender == 0)
 
 
 MaleHeart <- MaleHeart[,-2]
@@ -75,7 +88,7 @@ FemaleHeart <- FemaleHeart[,-2]
 
 pca.MaleHeart <- prcomp(MaleHeart)
 
-pca.MaleHeart
+#pca.MaleHeart
 
 summary(pca.MaleHeart)
 
@@ -98,18 +111,18 @@ scores.PC3 <- as.matrix(MaleHeart) %*% pca.MaleHeart$rotation[,3]
 ```{r, fig.width = 15, fig.height = 12}
 plot(pca.MaleHeart$sdev, xlab = "Component number", ylab = "Eigenvalue = component variance", type = 'l', main = "Male Hearts: Scree Diagram for PCA on Covariance Matrix")
 
-pca.MaleHeart$rotation
+#pca.MaleHeart$rotation
 ```
 
 
 
 ```{r, fig.width = 15, fig.height = 12}
-c(min(scores.PC1),max(scores.PC1))
-c(min(scores.PC2),max(scores.PC2))
+# c(min(scores.PC1),max(scores.PC1))
+# c(min(scores.PC2),max(scores.PC2))
 
 
 plot(scores.PC1,scores.PC2, main = "Male Hearts: PCA on S: 
-     Scatterplot of PC1 on PC2 Scores", xlim = c( 123.6420,351.5107), ylim = c(71.93503,204.54344))
+     Scatterplot of PC1 on PC2 Scores", xlim = c( -1.521836, 4.837029), ylim = c(-2.88651,3.67108))
 
 
 
@@ -117,9 +130,10 @@ plot(scores.PC1,scores.PC2, main = "Male Hearts: PCA on S:
 PCs1on2 <- cbind(scores.PC1, scores.PC2)
 require(stats)
 
-chull(PCs1on2)
+# chull(PCs1on2) used for points
+
  plot(PCs1on2, cex = 0.75, pch = 16, main = "Male Hearts: PCA on S: 
-      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( 123.6420,351.5107), ylim = c(71.93503,204.54344),xlab = "PC1 Score", ylab = "PC2 Score")
+      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( -1.521836, 4.837029), ylim = c(-2.88651,3.67108),xlab = "PC1 Score", ylab = "PC2 Score")
  hpts <- chull(PCs1on2)
  hpts <- c(hpts,hpts[1])
  lines(PCs1on2[hpts,])
@@ -136,7 +150,7 @@ chull(PCs1on2)
 
 pca.FemaleHeart <- prcomp(FemaleHeart)
 
-pca.FemaleHeart
+# pca.FemaleHeart
 
 summary(pca.FemaleHeart)
 
@@ -159,27 +173,29 @@ scores.PC3 <- as.matrix(FemaleHeart) %*% pca.FemaleHeart$rotation[,3]
 ```{r, fig.width = 15, fig.height = 12}
 plot(pca.FemaleHeart$sdev, xlab = "Component number", ylab = "Eigenvalue = component variance", type = 'l', main = "Female Hearts: Scree Diagram for PCA on Covariance Matrix")
 
-pca.FemaleHeart$rotation
+# pca.FemaleHeart$rotation
 ```
 
 
 
 ```{r, fig.width = 15, fig.height = 12}
-c(min(scores.PC1),max(scores.PC1))
-c(min(scores.PC2),max(scores.PC2))
+# c(min(scores.PC1),max(scores.PC1))
+# c(min(scores.PC2),max(scores.PC2))
 
 
 plot(scores.PC1,scores.PC2, main = "Female Hearts: PCA on S: 
-     Scatterplot of PC1 on PC2 Scores", xlim = c( -572.8083, -149.6205), ylim = c(-88.093004,9.051616))
+     Scatterplot of PC1 on PC2 Scores", xlim = c( -6.225462, 1.432780), ylim = c(-0.203207,3.863399))
 
 
 
 
 PCs1on2 <- cbind(scores.PC1, scores.PC2)
 
-chull(PCs1on2)
+# chull(PCs1on2)
+
+
  plot(PCs1on2, cex = 0.75, pch = 16, main = "Female Hearts: PCA on S: 
-      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( -572.8083, -149.6205), ylim = c(-88.093004,9.051616),xlab = "PC1 Score", ylab = "PC2 Score")
+      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( -6.225462, 1.432780), ylim = c(-0.203207,3.863399),xlab = "PC1 Score", ylab = "PC2 Score")
  hpts <- chull(PCs1on2)
  hpts <- c(hpts,hpts[1])
  lines(PCs1on2[hpts,])
@@ -217,6 +233,42 @@ chull(PCs1on2)
 #           Gender=revalue(Gender, c("0"="Female", "1"="Male")))
 
 
+# heart <- transform(heart,
+#           Target=revalue(Target, c("0"="Healthy Heart", "1"="Heart Disease")))
+
+summary(heart$Age)
+# Min age is 29, max 77
+# ("Young (29-45)","Middle Aged (45-65)","Old Age (>65)")
+# Maybe change grouping?
+
+
+
+
+#
+# Some linear Regression?
+#
+
 # PCA does not work with factors, maybe I should move that to somewhere later if I intend to plot
 ```
+
+>>>Comment above what it all means, show the PC rotation for the linear combination of variables
+
+
+>>> x = Chest pain type, y = count, wrap by Gender, names by factor will help plots
+>>>Chest pain by age [density or swarm] Univariate
+>>>Healthy vs Disease count, wrap by Gender
+>>> color = Target, x = chest pain, y = count
+
+####
+```{r}
+
+```
+
+
+
+
+
+
+
+
 
