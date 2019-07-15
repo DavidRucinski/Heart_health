@@ -1,5 +1,5 @@
 ---
-title: "heart health"
+title: "Heart Health"
 author: "David Rucinski"
 date: "July 15, 2019"
 
@@ -94,8 +94,8 @@ scores.PC3 <- as.matrix(MaleHeart) %*% pca.MaleHeart$rotation[,3]
 ```
 
 
-#Obtain scree plot
-```{r}
+### Male scree plot
+```{r, fig.width = 15, fig.height = 12}
 plot(pca.MaleHeart$sdev, xlab = "Component number", ylab = "Eigenvalue = component variance", type = 'l', main = "Male Hearts: Scree Diagram for PCA on Covariance Matrix")
 
 pca.MaleHeart$rotation
@@ -103,7 +103,7 @@ pca.MaleHeart$rotation
 
 
 
-```{r}
+```{r, fig.width = 15, fig.height = 12}
 c(min(scores.PC1),max(scores.PC1))
 c(min(scores.PC2),max(scores.PC2))
 
@@ -129,7 +129,63 @@ chull(PCs1on2)
 
 
 
+### Female Hearts
+```{r}
+#PCA on the covariance matrix of ln transformed data on female hearts
 
+
+pca.FemaleHeart <- prcomp(FemaleHeart)
+
+pca.FemaleHeart
+
+summary(pca.FemaleHeart)
+
+
+
+```
+
+
+
+
+##### Obtain the scores on the first principal component
+```{r}
+scores.PC1 <- as.matrix(FemaleHeart) %*% pca.FemaleHeart$rotation[,1]
+scores.PC2 <- as.matrix(FemaleHeart) %*% pca.FemaleHeart$rotation[,2]
+scores.PC3 <- as.matrix(FemaleHeart) %*% pca.FemaleHeart$rotation[,3]
+```
+
+
+### Female scree plot
+```{r, fig.width = 15, fig.height = 12}
+plot(pca.FemaleHeart$sdev, xlab = "Component number", ylab = "Eigenvalue = component variance", type = 'l', main = "Female Hearts: Scree Diagram for PCA on Covariance Matrix")
+
+pca.FemaleHeart$rotation
+```
+
+
+
+```{r, fig.width = 15, fig.height = 12}
+c(min(scores.PC1),max(scores.PC1))
+c(min(scores.PC2),max(scores.PC2))
+
+
+plot(scores.PC1,scores.PC2, main = "Female Hearts: PCA on S: 
+     Scatterplot of PC1 on PC2 Scores", xlim = c( -572.8083, -149.6205), ylim = c(-88.093004,9.051616))
+
+
+
+
+PCs1on2 <- cbind(scores.PC1, scores.PC2)
+
+chull(PCs1on2)
+ plot(PCs1on2, cex = 0.75, pch = 16, main = "Female Hearts: PCA on S: 
+      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( -572.8083, -149.6205), ylim = c(-88.093004,9.051616),xlab = "PC1 Score", ylab = "PC2 Score")
+ hpts <- chull(PCs1on2)
+ hpts <- c(hpts,hpts[1])
+ lines(PCs1on2[hpts,])
+
+
+```
 
 
 
@@ -152,13 +208,13 @@ chull(PCs1on2)
 
 
 ```{r}
-levels(heart$ChestPain)
-
-heart <- transform(heart,
-          ChestPain=revalue(ChestPain,c("0"="Typical Angina", "1"="Atypical Angina", "2"="Non-Anginal", "3"="Asymptomatic")))
-
-heart <- transform(heart,
-          Gender=revalue(Gender, c("0"="Female", "1"="Male")))
+# levels(heart$ChestPain)
+# 
+# heart <- transform(heart,
+#           ChestPain=revalue(ChestPain,c("0"="Typical Angina", "1"="Atypical Angina", "2"="Non-Anginal", "3"="Asymptomatic")))
+# 
+# heart <- transform(heart,
+#           Gender=revalue(Gender, c("0"="Female", "1"="Male")))
 
 
 # PCA does not work with factors, maybe I should move that to somewhere later if I intend to plot
