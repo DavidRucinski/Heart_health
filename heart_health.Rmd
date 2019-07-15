@@ -2,13 +2,24 @@
 title: "heart health"
 author: "David Rucinski"
 date: "July 15, 2019"
-output: html_document
+
+output:
+  html_document:
+    theme: cerulean
+    highlight: espresso
+    toc: true
+    toc_float: false
+    toc_depth: 4
+    df_print: kable
+    code_folding: hide
 ---
 
 
+```{r include=FALSE}
+knitr::opts_chunk$set(comment = NA)
+```
 
-
-
+## **Preparations**
 ```{r packages, message = FALSE, warning=FALSE}
 library(data.table)
 library(ggplot2)
@@ -17,6 +28,11 @@ library(RColorBrewer) #for some color
 library(plyr) # revalue()
 ```
 
+
+## **Analysis**
+
+
+### Data
 ```{r}
 
 heart <- fread("heart.csv", header = TRUE)
@@ -24,14 +40,105 @@ heart <- fread("heart.csv", header = TRUE)
 #str(heart)
 #head(health)
 
-
-
 #corrplot::corrplot(cor(heart), method = "number", type = "upper", tl.col="black", order="hclust", tl.srt=45, col=brewer.pal(n=8, name="PuOr"))
 
 ```
 
-# PCA on this data
+### Preprocessing
+```{r colnames clarity of variables}
+
+##### For a Little bit of clarity of variables
+list_names <- c("Age" , "Gender", "ChestPain", "RestingBloodPressure", "Cholestrol", "FastingBloodSugar", "RestingECG", "MaxHeartRateAchivied", "ExerciseIndusedAngina", "Oldpeak", "Slope", "MajorVessels", "Thalassemia", "Target")
+
+colnames(heart) <- list_names
+
+```
+
+
+### Male Hearts
 ```{r}
+# heart_PCA <- prcomp(heart)
+# summary(heart_PCA)
+
+MaleHeart <- subset(heart, Gender == 1)
+FemaleHeart <- subset(heart, Gender == 0)
+
+
+MaleHeart <- MaleHeart[,-2]
+#ln.Male <- log(MaleHeart)
+
+FemaleHeart <- FemaleHeart[,-2]
+#ln.Female <- log(FemaleHeart)
+
+#PCA on the covariance matrix of ln transformed data on male hearts
+
+
+pca.MaleHeart <- prcomp(MaleHeart)
+
+pca.MaleHeart
+
+summary(pca.MaleHeart)
+
+
+
+```
+
+
+
+
+##### Obtain the scores on the first principal component
+```{r}
+scores.PC1 <- as.matrix(MaleHeart) %*% pca.MaleHeart$rotation[,1]
+scores.PC2 <- as.matrix(MaleHeart) %*% pca.MaleHeart$rotation[,2]
+scores.PC3 <- as.matrix(MaleHeart) %*% pca.MaleHeart$rotation[,3]
+```
+
+
+#Obtain scree plot
+```{r}
+plot(pca.MaleHeart$sdev, xlab = "Component number", ylab = "Eigenvalue = component variance", type = 'l', main = "Male Hearts: Scree Diagram for PCA on Covariance Matrix")
+
+pca.MaleHeart$rotation
+```
+
+
+
+```{r}
+c(min(scores.PC1),max(scores.PC1))
+c(min(scores.PC2),max(scores.PC2))
+
+
+plot(scores.PC1,scores.PC2, main = "Male Hearts: PCA on S: 
+     Scatterplot of PC1 on PC2 Scores", xlim = c( 123.6420,351.5107), ylim = c(71.93503,204.54344))
+
+
+
+
+PCs1on2 <- cbind(scores.PC1, scores.PC2)
+require(stats)
+
+chull(PCs1on2)
+ plot(PCs1on2, cex = 0.75, pch = 16, main = "Male Hearts: PCA on S: 
+      Scatterplot of PC1 Scores vs PC2 Scores, with Convex Hull", xlim = c( 123.6420,351.5107), ylim = c(71.93503,204.54344),xlab = "PC1 Score", ylab = "PC2 Score")
+ hpts <- chull(PCs1on2)
+ hpts <- c(hpts,hpts[1])
+ lines(PCs1on2[hpts,])
+
+
+```
+
+
+
+
+
+
+
+
+## Factors
+```{r as factors for plots}
+
+# PCA on this data
+#
 # heart$sex <-  as.factor(heart$sex)
 # heart$cp <- as.factor(heart$cp)
 # heart$exang <- as.factor(heart$exang)
@@ -41,13 +148,6 @@ heart <- fread("heart.csv", header = TRUE)
 # heart %>%
 #   group_by(sex) %>%
 #   summarize(amount = n())
-
-
-##### For a Little bit of clarity of variables
-list_names <- c("Age" , "Gender", "ChestPain", "RestingBloodPressure", "Cholestrol", "FastingBloodSugar", "RestingECG", "MaxHeartRateAchivied", "ExerciseIndusedAngina", "Oldpeak", "Slope", "MajorVessels", "Thalassemia", "Target")
-
-colnames(heart) <- list_names
-
 ```
 
 
@@ -63,21 +163,4 @@ heart <- transform(heart,
 
 # PCA does not work with factors, maybe I should move that to somewhere later if I intend to plot
 ```
-
-
-```{r}
-heart_PCA <- prcomp(heart)
-summary(heart_PCA)
-
-```
-
-
-
-
-
-
-
-
-
-
 
