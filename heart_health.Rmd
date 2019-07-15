@@ -1,0 +1,83 @@
+---
+title: "heart health"
+author: "David Rucinski"
+date: "July 15, 2019"
+output: html_document
+---
+
+
+
+
+
+```{r packages, message = FALSE, warning=FALSE}
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(RColorBrewer) #for some color
+library(plyr) # revalue()
+```
+
+```{r}
+
+heart <- fread("heart.csv", header = TRUE)
+
+#str(heart)
+#head(health)
+
+
+
+#corrplot::corrplot(cor(heart), method = "number", type = "upper", tl.col="black", order="hclust", tl.srt=45, col=brewer.pal(n=8, name="PuOr"))
+
+```
+
+# PCA on this data
+```{r}
+# heart$sex <-  as.factor(heart$sex)
+# heart$cp <- as.factor(heart$cp)
+# heart$exang <- as.factor(heart$exang)
+# heart$thal <- as.factor(heart$thal)
+# heart$target <- as.factor(heart$target) 
+
+# heart %>%
+#   group_by(sex) %>%
+#   summarize(amount = n())
+
+
+##### For a Little bit of clarity of variables
+list_names <- c("Age" , "Gender", "ChestPain", "RestingBloodPressure", "Cholestrol", "FastingBloodSugar", "RestingECG", "MaxHeartRateAchivied", "ExerciseIndusedAngina", "Oldpeak", "Slope", "MajorVessels", "Thalassemia", "Target")
+
+colnames(heart) <- list_names
+
+```
+
+
+```{r}
+levels(heart$ChestPain)
+
+heart <- transform(heart,
+          ChestPain=revalue(ChestPain,c("0"="Typical Angina", "1"="Atypical Angina", "2"="Non-Anginal", "3"="Asymptomatic")))
+
+heart <- transform(heart,
+          Gender=revalue(Gender, c("0"="Female", "1"="Male")))
+
+
+# PCA does not work with factors, maybe I should move that to somewhere later if I intend to plot
+```
+
+
+```{r}
+heart_PCA <- prcomp(heart)
+summary(heart_PCA)
+
+```
+
+
+
+
+
+
+
+
+
+
+
