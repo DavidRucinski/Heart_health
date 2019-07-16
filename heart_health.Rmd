@@ -93,7 +93,7 @@ pca.MaleHeart <- prcomp(MaleHeart)
 summary(pca.MaleHeart)
 
 
-
+biplot(pca.MaleHeart, scale = 0)
 ```
 
 
@@ -200,7 +200,9 @@ PCs1on2 <- cbind(scores.PC1, scores.PC2)
  hpts <- c(hpts,hpts[1])
  lines(PCs1on2[hpts,])
 
+ # Can I split the plot healthy/disease ?
 
+ 
 ```
 
 
@@ -262,6 +264,17 @@ summary(heart$Age)
 ####
 ```{r}
 
+#library(MASS)
+# Fit the full model 
+full.model.male <- lm(Target ~., data = MaleHeart)
+# Stepwise regression model
+#step.model.male <- stepAIC(full.model.male, direction = "both")
+summary(step.model.male)
+
+full.model.female <- lm(Target ~., data = FemaleHeart)
+# Stepwise regression model
+#step.model.female <- stepAIC(full.model.female, direction = "both")
+summary(step.model.female)
 ```
 
 
