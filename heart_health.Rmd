@@ -291,9 +291,10 @@ heart %>%
 
 
 
-heart[, .N, by = .(Age, Target)] %>%
-  ggplot( aes(x = Age, y = N, fill = Target) ) +
-  geom_col()
+heart[, .N, by = .(Age, Target, Gender)] %>%
+  ggplot( aes(x = Age, y = N) ) +
+  geom_col(fill = "steelblue") +
+  facet_grid(Gender ~ Target)
 ```
 
 
