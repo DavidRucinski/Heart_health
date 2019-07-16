@@ -24,8 +24,9 @@ knitr::opts_chunk$set(comment = NA)
 library(data.table)
 library(ggplot2)
 library(dplyr)
-library(RColorBrewer) #for some color
+library(RColorBrewer) # for some color
 library(plyr) # revalue()
+#library(MASS) # models
 ```
 
 
@@ -93,7 +94,7 @@ pca.MaleHeart <- prcomp(MaleHeart)
 summary(pca.MaleHeart)
 
 
-biplot(pca.MaleHeart, scale = 0)
+biplot(pca.MaleHeart, scale = 0) #Furthest variables account for more (keep???)
 ```
 
 
@@ -205,52 +206,65 @@ PCs1on2 <- cbind(scores.PC1, scores.PC2)
  
 ```
 
+#### Fitting models [Re-work]
+```{r models}
+
+# Fit the full model 
+full.model.male <- lm(Target ~., data = MaleHeart)
+# Stepwise regression model
+step.model.male <- stepAIC(full.model.male, direction = "both")
+summary(step.model.male)
+
+full.model.female <- lm(Target ~., data = FemaleHeart)
+# Stepwise regression model
+step.model.female <- stepAIC(full.model.female, direction = "both")
+summary(step.model.female)
 
 
+full.model <- lm(Target ~., data = heart)
+step.model <- stepAIC(full.model, direction = "both")
+summary(step.model)
+```
+
+
+
+
+
+
+
+
+
+>>> HERE <<<
 
 ## Factors
 ```{r as factors for plots}
 
-# PCA on this data
-#
-# heart$sex <-  as.factor(heart$sex)
-# heart$cp <- as.factor(heart$cp)
-# heart$exang <- as.factor(heart$exang)
-# heart$thal <- as.factor(heart$thal)
-# heart$target <- as.factor(heart$target) 
-
-# heart %>%
-#   group_by(sex) %>%
-#   summarize(amount = n())
+heart$Gender <-  as.factor(heart$Gender)
+heart$ChestPain <- as.factor(heart$ChestPain)
+heart$ExerciseIndusedAngina <- as.factor(heart$ExerciseIndusedAngina)
+heart$Thalassemia <- as.factor(heart$Thalassemia)
+heart$Target <- as.factor(heart$Target)
 ```
 
 
 ```{r}
-# levels(heart$ChestPain)
-# 
-# heart <- transform(heart,
-#           ChestPain=revalue(ChestPain,c("0"="Typical Angina", "1"="Atypical Angina", "2"="Non-Anginal", "3"="Asymptomatic")))
-# 
-# heart <- transform(heart,
-#           Gender=revalue(Gender, c("0"="Female", "1"="Male")))
+levels(heart$ChestPain)
+
+heart <- transform(heart,
+          ChestPain=revalue(ChestPain,c("0"="Typical Angina", "1"="Atypical Angina", "2"="Non-Anginal", "3"="Asymptomatic")))
+
+heart <- transform(heart,
+          Gender=revalue(Gender, c("0"="Female", "1"="Male")))
 
 
-# heart <- transform(heart,
-#           Target=revalue(Target, c("0"="Healthy Heart", "1"="Heart Disease")))
+heart <- transform(heart,
+          Target=revalue(Target, c("0"="Healthy Heart", "1"="Heart Disease")))
 
 summary(heart$Age)
 # Min age is 29, max 77
 # ("Young (29-45)","Middle Aged (45-65)","Old Age (>65)")
 # Maybe change grouping?
 
-
-
-
-#
-# Some linear Regression?
-#
-
-# PCA does not work with factors, maybe I should move that to somewhere later if I intend to plot
 ```
 
 >>>Comment above what it all means, show the PC rotation for the linear combination of variables
@@ -261,27 +275,34 @@ summary(heart$Age)
 >>>Healthy vs Disease count, wrap by Gender
 >>> color = Target, x = chest pain, y = count
 
-####
 ```{r}
+posn_d <- position_dodge(width = 0.4)
 
-#library(MASS)
-# Fit the full model 
-full.model.male <- lm(Target ~., data = MaleHeart)
-# Stepwise regression model
-#step.model.male <- stepAIC(full.model.male, direction = "both")
-summary(step.model.male)
 
-full.model.female <- lm(Target ~., data = FemaleHeart)
-# Stepwise regression model
-#step.model.female <- stepAIC(full.model.female, direction = "both")
-summary(step.model.female)
+heart %>%
+  ggplot( aes())
+
+heart %>%
+  ggplot( aes(x = factor(Gender), fill = factor(ChestPain) )) +
+  geom_bar(position = "dodge" ,alpha = 0.6) 
+
+heart %>%
+  ggplot( aes(x = factor(Gender), fill = factor(Target)) ) +
+  geom_bar(position = posn_d ,alpha = 0.8)
+
 ```
 
 
+```{r univariate histograms}
+# library(purrr)
+# library(tidyr)
+# 
+# heart %>%
+#   keep(is.numeric) %>% 
+#   gather() %>% 
+#   ggplot(aes(value)) +
+#     facet_wrap(~ key, scales = "free") +
+#     geom_histogram()
 
-
-
-
-
-
+```
 
