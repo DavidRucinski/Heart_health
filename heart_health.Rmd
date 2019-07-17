@@ -270,7 +270,7 @@ summary(heart$Age)
 >>>Comment above what it all means, show the PC rotation for the linear combination of variables
 
 
->>>Chest pain by age [density or swarm] Univariate
+
 
 
 ```{r}
@@ -284,6 +284,8 @@ heart %>%
 heart %>%
   ggplot( aes(x = factor(Gender), fill = factor(ChestPain) )) +
   geom_bar(position = "dodge" ,alpha = 0.6) 
+#Add numbers to bars
+
 
 heart %>%
   ggplot( aes(x = factor(Gender), fill = factor(Target)) ) +
@@ -296,6 +298,9 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
   geom_col(fill = "steelblue") +
   facet_grid(Gender ~ Target)
 ```
+
+
+
 
 
 ```{r univariate histograms}
