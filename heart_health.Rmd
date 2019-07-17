@@ -284,6 +284,8 @@ heart %>%
 heart %>%
   ggplot( aes(x = factor(Gender), fill = factor(ChestPain) )) +
   geom_bar(position = "dodge" ,alpha = 0.6) 
+#Add numbers to bars
+
 
 heart %>%
   ggplot( aes(x = factor(Gender), fill = factor(Target)) ) +
