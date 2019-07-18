@@ -297,6 +297,18 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
   ggplot( aes(x = Age, y = N) ) +
   geom_col(fill = "steelblue") +
   facet_grid(Gender ~ Target)
+
+
+
+set.seed(101)
+Samples <- NULL
+Samples <- as.data.table(Samples)
+
+# How to make a new object to store 1000 samples ? check the distribution of each.
+for (i in 1:1000){
+  Samples[i] <- heart[, .N, by = .(Age, Target, Gender)][sample(.N,50)]
+}
+
 ```
 
 
