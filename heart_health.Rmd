@@ -315,7 +315,8 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
   gather() %>% 
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
-  geom_histogram()
+  geom_histogram() +
+   theme_grey()
 
 ```
 
