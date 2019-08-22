@@ -341,4 +341,3 @@ car::vif(model.heart)
 ```
 
 
-
