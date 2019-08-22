@@ -37,7 +37,7 @@ library(plyr) # revalue()
 ```{r}
 
 heart <- fread("heart.csv", header = TRUE)
-
+heart.test <- fread("heart.csv", header = TRUE)
 #str(heart)
 #head(health)
 
@@ -206,25 +206,8 @@ PCs1on2 <- cbind(scores.PC1, scores.PC2)
  
 ```
 
-#### Fitting models [Re-work]
-```{r models}
-
-# Fit the full model 
-full.model.male <- lm(Target ~., data = MaleHeart)
-# Stepwise regression model
-step.model.male <- stepAIC(full.model.male, direction = "both")
-summary(step.model.male)
-
-full.model.female <- lm(Target ~., data = FemaleHeart)
-# Stepwise regression model
-step.model.female <- stepAIC(full.model.female, direction = "both")
-summary(step.model.female)
 
 
-full.model <- lm(Target ~., data = heart)
-step.model <- stepAIC(full.model, direction = "both")
-summary(step.model)
-```
 
 
 
@@ -320,19 +303,42 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
 
 ```
 
-```{r}
+```{r, fig.width=12, fig.height=10, echo=FALSE}
 
+corr.heart <- cor(na.omit(heart.test))
+
+corrplot::corrplot(corr.heart,type="upper", method="color", insig = "blank", order="hclust", diag=FALSE, addCoef.col = "black", tl.col="black", tl.srt=27)
+
+names(heart)
+
+model.0 <- glm(Target ~ 1, data = heart, family ="binomial")
+model.1 <- glm(Target ~ . -Slope, data = heart, family = "binomial")
+
+step(model.0 , scope = formula(model.1), direction="forward", k = 2)
+
+
+
+model.heart <- glm(formula = Target ~ ChestPain + Thalassemia + MajorVessels + 
+    Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
+    Cholestrol + RestingBloodPressure + RestingECG, family = "binomial", 
+    data = heart)
+
+summary(model.heart)
 
 ```
 
 
+```{r}
+
+1-pchisq(1420.24-701.69, 1024-1010) #-> this is plausible with data given those variables
+# Reject null hypo: Constant vs added variables models are not the same
+
+
+car::vif(model.heart)
 
 
 
-
-
-
-
+```
 
 
 
