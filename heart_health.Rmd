@@ -336,8 +336,21 @@ summary(model.heart)
 
 car::vif(model.heart)
 
+library(caret)
+model.fold <- train(
+  Target ~ ChestPain + Thalassemia + MajorVessels + 
+    Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
+    Cholestrol + RestingBloodPressure + RestingECG, 
+  heart,
+  method="glm", family="binomial",
+  trControl = trainControl(
+    method = "cv", 
+    number = 10,
+    verboseIter = TRUE
+  )
+)
 
-
+model.fold
 ```
 
 
