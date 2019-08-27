@@ -339,6 +339,7 @@ car::vif(model.heart)
 
 # Cross-validation of model, checking accuracy
 library(caret)
+library(glmnet)
 model.fold <- train(
   Target ~ ChestPain + Thalassemia + MajorVessels + 
     Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
@@ -354,6 +355,22 @@ model.fold <- train(
 
 model.fold
 
+
+model.fold2 <- train(
+  Target ~ ., 
+  heart,
+  method="glm", family="binomial",
+  trControl = trainControl(
+    method = "cv", 
+    number = 10,
+    verboseIter = TRUE
+  )
+)
+
+model.fold2
+
+# More accurate with model selected via stepwise function
+
 # Random-Forest modeling
 
 
@@ -363,22 +380,58 @@ tune.grid <- data.frame(
   .min.node.size = 5
 )
 
-# Check how to do on binary
-model.forest <- train(
-  Target ~.,
-  tuneGrid = tune.grid,
-  data = heart,
-  method = "ranger",
-  trControl = trainControl(
-    method = "cv", 
-    number = 5, 
-    verboseIter = TRUE
-  )
+
+# model.forest <- train(
+#   target ~.,
+#   tuneGrid = tune.grid,
+#   data = heart.test,
+#   method = "ranger",
+#   trControl = trainControl(
+#     method = "cv", 
+#     number = 5, 
+#     verboseIter = TRUE
+#   )
+# )
+# 
+# model.forest
+# 
+# plot(model.forest)
+
+
+# Glmnet modeling
+
+myControl <- trainControl(
+  method = "cv", 
+  number = 10,
+  summaryFunction = twoClassSummary,              #twoClassSummary for logistic
+  classProbs = TRUE, # <- Super important!
+  verboseIter = TRUE
 )
 
-model.forest
+set.seed(13)
+# model.glmnet <- train(
+#   target ~ ., 
+#   heart.test, 
+#   method = "glmnet", 
+#   trControl = myControl
+# )
+# 
+# plot(model.glmnet)
+# doesn't look useful here with defaultSummary
 
-plot(model.forest)
+model.glmnet2 <- train(
+  target ~., 
+  heart.test,
+  tuneGrid = expand.grid(
+  alpha = 0:1,
+  lambda = seq(0.0001, 1, length = 100)
+),
+  method = "glmnet",
+  trControl = myControl
+)
+ 
+plot(model.glmnet2)
+max(model.glmnet2[["results"]][["ROC"]])
 ```
 
 
