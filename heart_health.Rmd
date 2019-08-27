@@ -426,10 +426,11 @@ model.glmnet2 <- train(
   alpha = 0:1,
   lambda = seq(0.0001, 1, length = 20)
 ),
-  method = "glmnet",
+  method = "glm",
   trControl = myControl
 )
 
+#neither glm nor glmnet working
 #Error: At least one of the class levels is not a valid R variable name; This will cause errors when class probabilities are generated because the variables names will be converted to  Healthy.Heart, Heart.Disease . Please use factor levels that can be used as valid R variable names  (see ?make.names for help)..
 # On the cleaned heart data it gives the same thing, they are factors and have names.
 
