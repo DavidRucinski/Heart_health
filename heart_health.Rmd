@@ -336,6 +336,8 @@ summary(model.heart)
 
 car::vif(model.heart)
 
+
+# Cross-validation of model, checking accuracy
 library(caret)
 model.fold <- train(
   Target ~ ChestPain + Thalassemia + MajorVessels + 
@@ -351,6 +353,32 @@ model.fold <- train(
 )
 
 model.fold
+
+# Random-Forest modeling
+
+
+tune.grid <- data.frame(
+  .mtry = c(2, 3, 7),
+  .splitrule = "variance",
+  .min.node.size = 5
+)
+
+# Check how to do on binary
+model.forest <- train(
+  Target ~.,
+  tuneGrid = tune.grid,
+  data = heart,
+  method = "ranger",
+  trControl = trainControl(
+    method = "cv", 
+    number = 5, 
+    verboseIter = TRUE
+  )
+)
+
+model.forest
+
+plot(model.forest)
 ```
 
 
