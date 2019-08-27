@@ -335,7 +335,7 @@ summary(model.heart)
 
 
 car::vif(model.heart)
-
+heart.test$target <- as.factor(heart.test$target)
 
 # Cross-validation of model, checking accuracy
 library(caret)
@@ -381,21 +381,21 @@ tune.grid <- data.frame(
 )
 
 
-# model.forest <- train(
-#   target ~.,
-#   tuneGrid = tune.grid,
-#   data = heart.test,
-#   method = "ranger",
-#   trControl = trainControl(
-#     method = "cv", 
-#     number = 5, 
-#     verboseIter = TRUE
-#   )
-# )
-# 
-# model.forest
-# 
-# plot(model.forest)
+ # model.forest <- train(
+ #   target ~.,
+ #   tuneGrid = tune.grid,
+ #   data = heart.test,
+ #   method = "ranger",
+ #   trControl = trainControl(
+ #     method = "cv", 
+ #     number = 5, 
+ #     verboseIter = TRUE
+ #   )
+ # )
+ # 
+ # model.forest
+ # 
+ # plot(model.forest)
 
 
 # Glmnet modeling
@@ -420,16 +420,19 @@ set.seed(13)
 # doesn't look useful here with defaultSummary
 
 model.glmnet2 <- train(
-  target ~., 
-  heart.test,
+  Target ~., 
+  heart,
   tuneGrid = expand.grid(
   alpha = 0:1,
-  lambda = seq(0.0001, 1, length = 100)
+  lambda = seq(0.0001, 1, length = 20)
 ),
   method = "glmnet",
   trControl = myControl
 )
- 
+
+#Error: At least one of the class levels is not a valid R variable name; This will cause errors when class probabilities are generated because the variables names will be converted to  Healthy.Heart, Heart.Disease . Please use factor levels that can be used as valid R variable names  (see ?make.names for help)..
+# On the cleaned heart data it gives the same thing, they are factors and have names.
+
 plot(model.glmnet2)
 max(model.glmnet2[["results"]][["ROC"]])
 ```
