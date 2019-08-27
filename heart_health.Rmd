@@ -340,6 +340,10 @@ heart.test$target <- as.factor(heart.test$target)
 # Cross-validation of model, checking accuracy
 library(caret)
 library(glmnet)
+
+levels(heart$Target) <- make.names(levels(factor(heart$Target)))
+
+
 model.fold <- train(
   Target ~ ChestPain + Thalassemia + MajorVessels + 
     Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
@@ -381,21 +385,21 @@ tune.grid <- data.frame(
 )
 
 
- # model.forest <- train(
- #   target ~.,
- #   tuneGrid = tune.grid,
- #   data = heart.test,
- #   method = "ranger",
- #   trControl = trainControl(
- #     method = "cv", 
- #     number = 5, 
- #     verboseIter = TRUE
- #   )
- # )
- # 
- # model.forest
- # 
- # plot(model.forest)
+  # model.forest <- train(
+  #   Target ~.,
+  #   tuneGrid = tune.grid,
+  #   data = heart,
+  #   method = "ranger",
+  #   trControl = trainControl(
+  #     method = "cv", 
+  #     number = 5, 
+  #     verboseIter = TRUE
+  #   )
+  # )
+  # 
+  # model.forest
+  # 
+  # plot(model.forest)
 
 
 # Glmnet modeling
@@ -419,6 +423,8 @@ set.seed(13)
 # plot(model.glmnet)
 # doesn't look useful here with defaultSummary
 
+
+
 model.glmnet2 <- train(
   Target ~., 
   heart,
@@ -426,16 +432,31 @@ model.glmnet2 <- train(
   alpha = 0:1,
   lambda = seq(0.0001, 1, length = 20)
 ),
-  method = "glm",
+  method = "glmnet",
   trControl = myControl
 )
 
-#neither glm nor glmnet working
-#Error: At least one of the class levels is not a valid R variable name; This will cause errors when class probabilities are generated because the variables names will be converted to  Healthy.Heart, Heart.Disease . Please use factor levels that can be used as valid R variable names  (see ?make.names for help)..
-# On the cleaned heart data it gives the same thing, they are factors and have names.
 
 plot(model.glmnet2)
 max(model.glmnet2[["results"]][["ROC"]])
+
+
+
+
+split <- round(nrow(heart)*.60)
+train.set <- heart[1:split,]
+test.set  <- heart[(split+1):nrow(heart),]
+
+
+model_rf <- train(
+  Target ~ ., 
+  train.set,
+  metric = "ROC",
+  method = "ranger", 
+  trControl = myControl
+)
+
+plot(model_rf)
 ```
 
 
