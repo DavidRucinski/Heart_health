@@ -290,7 +290,7 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
 
 
 
-```{r univariate histograms}
+```{r univariate histograms, eval=FALSE, include=FALSE}
  library(purrr)
  
  heart %>%
@@ -499,11 +499,13 @@ cv_models_lr <- cv_data %>%
 model <- cv_models_lr$model[[1]]
 validate <- cv_models_lr$validate[[1]]
 
+
 # Prepare binary vector of actual Heart Disease values in validate
 validate_actual <- validate$Target == "Heart.Disease"
 
 # Predict the probabilities for the observations in validate
 validate_prob <- predict(model, validate, type = "response")
+
 
 # Prepare binary vector of predicted Heart Disease values for validate
 validate_predicted <- validate_prob > 0.5
@@ -520,10 +522,12 @@ precision(validate_actual, validate_predicted)
 recall(validate_actual, validate_predicted)
 
 
+
 cv_prep_lr <- cv_models_lr %>% 
   mutate(validate_actual = map(validate, ~.x$Target == "Heart.Disease"),
          validate_predicted = map2(.x = model, .y = validate, ~predict(.x, .y, type = "response") > 0.5)
          )
+
 
 
 
