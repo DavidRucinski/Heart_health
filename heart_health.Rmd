@@ -460,3 +460,39 @@ plot(model_rf)
 ```
 
 
+```{r testing ML}
+library(broom)
+library(rsample)
+library(Metrics)
+library(ranger)
+library(purrr)
+library(dplyr)
+
+set.seed(1337)
+
+# Prepare the initial split object
+data_split <- initial_split(heart, prop = 0.75)
+
+# Extract the training dataframe
+training_data <- training(data_split)
+
+# Extract the testing dataframe
+testing_data <- testing(data_split)
+
+
+
+set.seed(1337)
+cv_split <- vfold_cv(training_data, v = 5)
+
+cv_data <- cv_split %>% 
+  mutate(train = map(splits, ~training(.x)),validate = map(splits, ~testing(.x)))
+
+# Extract the train dataframe for each split
+# Extract the validate dataframe for each split
+  
+```
+
+
+
+
+
