@@ -567,6 +567,27 @@ cv_perf_recall %>%
   summarise(mean_recall = mean(recall))
 
 
+
+# Building best model using all the training data
+
+best_model <- ranger(formula = Target~., data = training_data , mtry = 4, num.trees = 100, seed = 1337)
+
+
+test_actual <- testing_data$Target == "Heart.Disease"
+test_predicted <- predict(best_model, testing_data, type = "response")$predictions == "Heart.Disease"
+# predict(best_model, testing_data, type = "response") > 0.5
+# but seems model is 100% accurate, this doesn't seem right.
+# Could try some more testing, or more splits of data for testing.
+
+
+table(test_actual,test_predicted)
+accuracy(test_actual,test_predicted)
+precision(test_actual,test_predicted)
+recall(test_actual,test_predicted)
+
+
+mae(test_actual, test_predicted)
+
 ```
 
 
