@@ -317,7 +317,9 @@ validate_prob <- predict(model, validate, type = "response")
 # Prepare binary vector of predicted Heart Disease values for validate
 validate_predicted <- validate_prob > 0.5
 # Compare the actual & predicted performance visually using a table
+
 table(validate_actual, validate_predicted)
+
 ```
 
 **Comment ??**
@@ -487,7 +489,9 @@ test_predicted <- predict(best_model, testing_data, type = "response")$predictio
 
 
 
+
 table(test_actual,test_predicted)
+
 
 ```
 
