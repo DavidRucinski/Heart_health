@@ -255,33 +255,50 @@ summary(heart$Age)
 
 
 
-
+###Plots
 ```{r}
+library(ggthemes)
 posn_d <- position_dodge(width = 0.4)
 
 
 heart %>%
   ggplot( aes(x = factor(ChestPain), fill = factor(Target))) +
-  geom_bar(position = posn_d ,alpha = 0.8)
-
-heart %>%
-  ggplot( aes(x = factor(Gender), fill = factor(ChestPain) )) +
-  geom_bar(position = "dodge" ,alpha = 0.6) 
-#Add numbers to bars
+  geom_bar(position = posn_d ,alpha = 0.8) +
+  labs(x = "Chest Pain", y = "Count",title = "Heart Health", subtitle = "By type of chest pain", caption = "Heart Disease UCI from Kaggle") +
+  geom_text(aes(label=..count..),stat="count",position=posn_d, vjust = -0.3) +
+  scale_fill_manual("legend", values = c("Healthy Heart" = "goldenrod1", "Heart Disease" = "darkviolet")) +
+  theme_minimal() +
+  theme(legend.title = element_blank()) 
 
 
 heart %>%
   ggplot( aes(x = factor(Gender), fill = factor(Target)) ) +
-  geom_bar(position = posn_d ,alpha = 0.8)
+  geom_bar(position = posn_d ,alpha = 0.8) +
+  labs(x = "Sex",title = "Heart Health", subtitle = "By sex", caption = "Heart Disease UCI from Kaggle") +
+  geom_text(aes(label=..count..),stat="count",position=posn_d, vjust = -0.3) +
+  scale_color_fivethirtyeight() + 
+  theme_fivethirtyeight() +
+  theme(legend.title = element_blank()) +
+  scale_fill_manual("legend", values = c("Healthy Heart" = "brown1", "Heart Disease" = "forestgreen"))
 
+
+heart %>%
+  ggplot( aes(x = factor(Gender), fill = factor(ChestPain) )) +
+  geom_bar(position = "dodge" ,alpha = 0.6) +
+  labs(x = "Sex", y = "Count",title = "Type of Chest Pain", subtitle = "By sex", caption = "Heart Disease UCI from Kaggle") +
+  geom_text(aes(label=..count..),stat="count",position=position_dodge(width = 0.9), vjust = -0.3) +
+  theme_stata() + scale_fill_stata() +
+  theme(legend.title = element_blank()) 
+#Add Titles
 
 
 heart[, .N, by = .(Age, Target, Gender)] %>%
   ggplot( aes(x = Age, y = N) ) +
-  geom_col(fill = "steelblue") +
-  facet_grid(Gender ~ Target)
-
-
+  geom_col( fill = "dodgerblue") +
+  facet_grid(Gender ~ Target, scales = "free") +
+  labs( y = "Count",title = "Age Distribution", subtitle = "By heart health and sex", caption = "Heart Disease UCI from Kaggle") +
+  theme_stata() + scale_fill_stata()
+  
 
 
 ```
@@ -302,13 +319,17 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
    theme_grey()
 
 ```
-
+###Corrplot
 ```{r, fig.width=12, fig.height=10, echo=FALSE}
 
 corr.heart <- cor(na.omit(heart.test))
 
 corrplot::corrplot(corr.heart,type="upper", method="color", insig = "blank", order="hclust", diag=FALSE, addCoef.col = "black", tl.col="black", tl.srt=27)
 
+```
+
+###Models
+```{r}
 names(heart)
 
 model.0 <- glm(Target ~ 1, data = heart, family ="binomial")
@@ -316,7 +337,7 @@ model.1 <- glm(Target ~ . -Slope, data = heart, family = "binomial")
 
 step(model.0 , scope = formula(model.1), direction="forward", k = 2)
 
-
+# model.heart <- train(heart, heart$Target, preProcess = c("medianImpute", "center","scale"))
 
 model.heart <- glm(formula = Target ~ ChestPain + Thalassemia + MajorVessels + 
     Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
@@ -325,22 +346,20 @@ model.heart <- glm(formula = Target ~ ChestPain + Thalassemia + MajorVessels +
 
 summary(model.heart)
 
-```
-
-
-```{r}
 
 1-pchisq(1420.24-701.69, 1024-1010) #-> this is plausible with data given those variables
 # Reject null hypo: Constant vs added variables models are not the same
 
 
 car::vif(model.heart)
-heart.test$target <- as.factor(heart.test$target)
+
 
 # Cross-validation of model, checking accuracy
 library(caret)
 library(glmnet)
 
+
+# This bad boy is needed
 levels(heart$Target) <- make.names(levels(factor(heart$Target)))
 
 
@@ -385,21 +404,21 @@ tune.grid <- data.frame(
 )
 
 
-  # model.forest <- train(
-  #   Target ~.,
-  #   tuneGrid = tune.grid,
-  #   data = heart,
-  #   method = "ranger",
-  #   trControl = trainControl(
-  #     method = "cv", 
-  #     number = 5, 
-  #     verboseIter = TRUE
-  #   )
+  #  model.forest <- train(
+  #    Target ~.,
+  #    tuneGrid = tune.grid,
+  #    data = heart,
+  #    method = "ranger",
+  #    trControl = trainControl(
+  #      method = "cv", 
+  #      number = 5, 
+  #      verboseIter = TRUE
+  #    )
   # )
-  # 
-  # model.forest
-  # 
-  # plot(model.forest)
+  #  
+  #  model.forest
+  #  
+  #  plot(model.forest)
 
 
 # Glmnet modeling
@@ -413,14 +432,14 @@ myControl <- trainControl(
 )
 
 set.seed(13)
-# model.glmnet <- train(
-#   target ~ ., 
-#   heart.test, 
-#   method = "glmnet", 
-#   trControl = myControl
-# )
-# 
-# plot(model.glmnet)
+ model.glmnet <- train(
+   Target ~ ., 
+   heart, 
+   method = "glmnet", 
+   trControl = myControl
+ )
+ 
+ plot(model.glmnet)
 # doesn't look useful here with defaultSummary
 
 
@@ -471,7 +490,7 @@ library(dplyr)
 set.seed(1337)
 
 # Prepare the initial split object
-data_split <- initial_split(heart, prop = 0.75)
+data_split <- initial_split(heart, prop = 0.60)
 
 # Extract the training dataframe
 training_data <- training(data_split)
@@ -517,9 +536,9 @@ validate_predicted <- validate_prob > 0.5
 # Compare the actual & predicted performance visually using a table
 table(validate_actual, validate_predicted)
 
-accuracy(validate_actual, validate_predicted)
-precision(validate_actual, validate_predicted)
-recall(validate_actual, validate_predicted)
+Metrics::accuracy(validate_actual, validate_predicted)
+Metrics::precision(validate_actual, validate_predicted)
+Metrics::recall(validate_actual, validate_predicted)
 
 
 
@@ -539,15 +558,20 @@ cv_perf_recall <- cv_prep_lr %>%
 cv_perf_recall$validate_recall
 mean(cv_perf_recall$validate_recall)
 
+
+
 # Comparing to Random Forest model
 
-cv_tune <- cv_data %>%  
-  crossing(mtry = c(2, 4, 8, 13)) # mtry range 1:# of features
+
+ cv_tune <- cv_data %>%  
+   expand_grid(mtry = 2:13) # mtry range 1:# of features
+ 
+ #NOTE: crossing() has been updated, expand_grid() now replaces it.
 
 cv_models_rf <- cv_tune %>% 
   mutate(model = map2(train, mtry, ~ranger(formula = Target~., 
                                            data = .x, mtry = .y, 
-                                           num.trees = 100, seed = 1337)))
+                                           num.trees = 700, seed = 1337)))
 
 
 
@@ -561,6 +585,8 @@ cv_prep_rf <- cv_models_rf %>%
 cv_perf_recall <- cv_prep_rf %>% 
   mutate(recall = map2_dbl(.x = validate_actual, .y = validate_predicted, ~recall(actual = .x, predicted = .y)))
 
+
+">>>>>>>NOT WORKING, summarize() is out of wack. Does not show combinations anymore<<<<<<<"
 # Mean recall for each mtry used  
 cv_perf_recall %>% 
   group_by(mtry) %>% 
@@ -568,25 +594,54 @@ cv_perf_recall %>%
 
 
 
+# Tuning mtry
+cv_eval_tune <- cv_prep_rf %>% 
+ mutate(validate_mae = map2_dbl(.x = validate_actual, .y = validate_predicted, ~mae(actual = .x, predicted = .y)))
+
+
+# Mean validate MAE for each fold and mtry combination
+cv_eval_tune %>% 
+  group_by(mtry) %>%
+  summarise(mean_validate_mae = mean(validate_mae))
+
+#########
+#   select(mtry, validate_mae) 
+# 
+# class(test)
+# as.tbl(test) %>%
+#   group_by(mtry) %>%
+#    summarise(mean_validate_mae = mean(validate_mae))
+# 
+# 
+# 
+# cv_eval_tune %>%
+#   group_map(mean(validate_mae), keep = FALSE)
+#   group_map(.tbl, .f, ..., keep = FALSE)
+#   
+#########
+
+
 # Building best model using all the training data
 
-best_model <- ranger(formula = Target~., data = training_data , mtry = 4, num.trees = 100, seed = 1337)
+best_model <- ranger(formula = Target~., data = training_data , mtry = 4, num.trees = 700, seed = 1337)
 
 
 test_actual <- testing_data$Target == "Heart.Disease"
 test_predicted <- predict(best_model, testing_data, type = "response")$predictions == "Heart.Disease"
-# predict(best_model, testing_data, type = "response") > 0.5
-# but seems model is 100% accurate, this doesn't seem right.
-# Could try some more testing, or more splits of data for testing.
+
+# sum(as.numeric(predictions(best_model, testing_data, type = "response"))-1)/769 > 0.5
+# 51.88% 
+
 
 
 table(test_actual,test_predicted)
-accuracy(test_actual,test_predicted)
-precision(test_actual,test_predicted)
-recall(test_actual,test_predicted)
+Metrics::accuracy(test_actual,test_predicted)
+Metrics::precision(test_actual,test_predicted)
+Metrics::recall(test_actual,test_predicted)
 
 
 mae(test_actual, test_predicted)
+
 
 ```
 
