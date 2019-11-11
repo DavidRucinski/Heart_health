@@ -178,7 +178,7 @@ myControl <- trainControl(
   method = "cv", 
   number = 10,
   summaryFunction = twoClassSummary,              #twoClassSummary for logistic
-  classProbs = TRUE, # <- Super important!
+  classProbs = TRUE,                              #Classifcation probabilities
   verboseIter = TRUE
 )
 ########################################################
@@ -319,7 +319,7 @@ model_rf <- train(
 ```
 
 
-
+>>> Only first model
 
 ###Logistic Regression - Cross-Validated Models
 ```{r Logistic Regression}
@@ -332,6 +332,7 @@ cv_models_lr <- cv_data %>%
 # Examine the first model and validate 
 model <- cv_models_lr$model[[1]]
 validate <- cv_models_lr$validate[[1]]
+
 
 
 # Prepare binary vector of actual Heart Disease values in validate
@@ -347,6 +348,29 @@ validate_predicted <- validate_prob > 0.5
 
 table(validate_actual, validate_predicted)
 
+
+for(i in 1:5){
+  m <- cv_models_lr$model[[i]]
+  v <- cv_models_lr$validate[[i]]
+  
+  v_actual <- v$Target == "Heart.Disease"
+  v_prob <- predict(m, v, type = "response")
+
+  v_predicted <- v_prob > 0.5
+
+  
+  print(table(v_actual, v_predicted))
+  
+  print("**Accuracy**")
+  print(Metrics::accuracy(v_actual, v_predicted))
+  print("**Precision**")
+  print(Metrics::precision(v_actual, v_predicted))
+  
+
+  
+}
+
+"list all acc and precision, then mean"
 ```
 
 Using a logistic regression model to predict heart disease, the metrics of interest will be accuracy and precision. We would like to know who does and does not have heart disease, as well as how correct that true classification is.
@@ -378,7 +402,6 @@ cv_prep_lr <- cv_models_lr %>%
          validate_predicted = map2(.x = model, .y = validate, 
                                    ~predict(.x, .y, type = "response") > 0.5)
          )
-
 
 # Validate recall for each cross validation fold
 cv_perf_recall <- cv_prep_lr %>% 
@@ -440,13 +463,14 @@ model.glmnet <- train(
   tuneGrid = tune.grid,
   method = "glmnet",
   trControl = myControl,
-  preProcess = "medianImpute"
+  preProcess = c("medianImpute", "center", "scale")
 )
 
 
 plot(model.glmnet)
 model.glmnet
 #max(model.glmnet[["results"]][["ROC"]])
+plot(model.glmnet$finalModel)
 ```
 
 
@@ -470,7 +494,10 @@ model.heart <- glm(formula = Target ~ ChestPain + Thalassemia + MajorVessels +
 summary(model.heart)
 ```
 
+```{r}
 
+
+```
 
 
 ```{r eval=FALSE, include=FALSE}
