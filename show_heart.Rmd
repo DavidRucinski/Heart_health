@@ -90,7 +90,7 @@ corr.heart <- cor(na.omit(heart.c))
 
 corrplot::corrplot(corr.heart,type="upper", method="color", insig = "blank", order="hclust", diag=FALSE, addCoef.col = "black", tl.col="black", tl.srt=27)
 
-rm(heart.c)
+
 ```
 
 ###Heart Health Graphs in Different Styles
@@ -148,6 +148,7 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
 
 
 ##Modeling
+*Problem: Classification*
 ###Training Data
 ```{r Training data}
 levels(heart$Target) <- make.names(levels(factor(heart$Target)))
@@ -268,7 +269,34 @@ knitr::kable(as.data.frame(k))
 
 ```
 
-**Comment HERE** Recall and validate mae for mtry hyper-parameter tuning.
+The Mean Absolute Error (MAE) measures how much on average the predicted values differ from actual values, taking the mean of the MAE over different folds the hyperparameter mtry is best at 12. 
+
+On average the true positive rate (Sensitivity/Recall) seems to increase as mtry increases, in general. These predictive models performance quite well.
+
+####Model Results on Test Data
+**Mean Absolute Error**
+```{r best Random Forest model}
+best_model <- ranger(formula = Target~., data = training_data , mtry = 12, num.trees = 2000, seed = 1337)
+
+test_actual <- testing_data$Target == "Heart.Disease"
+test_predicted <- predict(best_model, testing_data, type = "response")$predictions == "Heart.Disease"
+
+mae(test_actual, test_predicted)
+```
+
+
+**Accuracy**
+Measures how well the model predicted both TRUE and FALSE classes.
+```{r}
+Metrics::accuracy(test_actual,test_predicted)
+```
+
+**Precision**
+Calculates how often the model is correct at the TRUE class."
+```{r}
+Metrics::precision(test_actual,test_predicted)
+```
+
 
 
 ####RF model
@@ -322,8 +350,7 @@ table(validate_actual, validate_predicted)
 
 ```
 
-**Comment ??**
-
+Using a logistic regression model to predict heart disease, the metrics of interest will be accuracy and precision. We would like to know who does and does not have heart disease, as well as how correct that true classification is.
 
 
 **Accuracy**
@@ -331,15 +358,18 @@ table(validate_actual, validate_predicted)
 Metrics::accuracy(validate_actual, validate_predicted)
 ```
 
+
 **Precision**
 ```{r}
 Metrics::precision(validate_actual, validate_predicted)
 ```
 
+
 **Recall**
 ```{r}
 Metrics::recall(validate_actual, validate_predicted)
 ```
+
 
 
 ```{r}
@@ -357,11 +387,11 @@ cv_perf_recall <- cv_prep_lr %>%
                                     ~recall(actual = .x, predicted = .y)))
 
 
-cv_perf_recall$validate_recall
+# cv_perf_recall$validate_recall
 mean(cv_perf_recall$validate_recall)
 ```
 
-**Comment HERE**
+*Mean recall of training models*
 
 
 
@@ -472,47 +502,28 @@ model.heart <- glm(formula = Target ~ ChestPain + Thalassemia + MajorVessels +
     data = heart)
 
 summary(model.heart)
-
 ```
 
 
-###Final Model(?)
-```{r Best Model}
 
-best_model <- ranger(formula = Target~., data = training_data , mtry = 12, num.trees = 2000, seed = 1337)
 
-test_actual <- testing_data$Target == "Heart.Disease"
-test_predicted <- predict(best_model, testing_data, type = "response")$predictions == "Heart.Disease"
-
-# sum(as.numeric(predictions(best_model, testing_data, type = "response"))-1)/769 > 0.5
-# 51.88% 
+```{r eval=FALSE, include=FALSE}
+heart.df<- as.data.frame(heart.c)
+keep <- c(1,4,5,8,10)
+heart.df <- heart.df[, keep]
 
 
 
+# for (i in 1:5){
+#   print(boxplot.stats(heart.df[,i])$out)
+# }
 
-table(test_actual,test_predicted)
+for (i in 1:5){
+   AID::boxcoxnc(heart.df[,i], lambda = seq(-5,5,0.01), lambda2 = 2)
+   print(i)
+}
 
 
-```
-
-**Accuracy**
-```{r}
-Metrics::accuracy(test_actual,test_predicted)
-```
-
-**Precision**
-```{r}
-Metrics::precision(test_actual,test_predicted)
-```
-
-**Recall**
-```{r}
-Metrics::recall(test_actual,test_predicted)
-```
-
-**Mean Absolute Error**
-```{r}
-mae(test_actual, test_predicted)
 ```
 
 
