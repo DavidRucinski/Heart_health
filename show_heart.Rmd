@@ -299,8 +299,8 @@ Metrics::precision(test_actual,test_predicted)
 
 
 
-####RF model
-```{r, fig.width=12, fig.height=10,}
+
+```{r eval=FALSE, fig.height=10, fig.width=12, include=FALSE}
 split <- round(nrow(heart)*.60)
 train.set <- heart[1:split,]
 test.set  <- heart[(split+1):nrow(heart),]
@@ -314,17 +314,16 @@ model_rf <- train(
   trControl = myControl
 )
 
-plot(model_rf)
-knitr::kable(model_rf$results)
+# plot(model_rf)
 
-model_rf$bestTune
 ```
 
-**Comment HERE** gini/(extra trees), ROC plot, best tune
+
 
 
 ###Logistic Regression - Cross-Validated Models
 ```{r Logistic Regression}
+
 
 cv_models_lr <- cv_data %>% 
   mutate(model = map(train, ~glm(formula = Target~., data = .x, family = "binomial")))
@@ -371,7 +370,7 @@ Metrics::recall(validate_actual, validate_predicted)
 ```
 
 
-
+*Mean Recall of training models*
 ```{r}
 
 cv_prep_lr <- cv_models_lr %>% 
@@ -391,37 +390,13 @@ cv_perf_recall <- cv_prep_lr %>%
 mean(cv_perf_recall$validate_recall)
 ```
 
-*Mean recall of training models*
 
 
 
-####Lr model and Glm model
-```{r, fig.width=12, fig.height=10,}
 
-# Variable selection via stepwise
+
+```{r eval=FALSE, include=FALSE}
 model.fold <- train(
-  Target ~ ChestPain + Thalassemia + MajorVessels + 
-    Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
-    Cholestrol + RestingBloodPressure + RestingECG, 
-  heart,
-  method="glm", family="binomial",
-  trControl = trainControl(
-    method = "cv", 
-    number = 10,
-    verboseIter = TRUE
-  )
-)
-
-model.fold
-```
-
-**Comment HERE** results of fold
-
-
-
-```{r}
-# All Variables for logistic
-model.fold2 <- train(
   Target ~ ., 
   heart,
   method="glm", family="binomial",
@@ -430,59 +405,50 @@ model.fold2 <- train(
     number = 10,
     verboseIter = TRUE
   )
+  
 )
 
-model.fold2
+model.fold
 ```
 
-**Comment HERE** results of fold
 
 
-
+####Glmnet Modeling
 ```{r}
-# Glmnet modeling
+# Custom tuning grid for RF-modeling
+# tune.grid <- data.frame(
+#   .mtry = 2:length(heart),
+#   .splitrule = "variance",
+#   .min.node.size = 5
+# )
 
-set.seed(13)
- model.glmnet <- train(
-   Target ~ ., 
-   heart, 
-   method = "glmnet", 
-   trControl = myControl
- )
- 
- plot(model.glmnet)
-```
 
-**Comment HERE** on plot and regularization parameter 
- 
- 
- 
-```{r}
-# Custom tuning
-tune.grid <- data.frame(
-  .mtry = 2:length(heart),
-  .splitrule = "variance",
-  .min.node.size = 5
-)
-
-# Lasso or Ridge
-model.glmnet2 <- train(
-  Target ~., 
-  heart,
-  tuneGrid = expand.grid(
+# Custom tuning grid for Lasso or Ridge regression
+tune.grid <- expand.grid(
   alpha = 0:1,
   lambda = seq(0.0001, 1, length = 20)
-),
-  method = "glmnet",
-  trControl = myControl
 )
 
 
-plot(model.glmnet2)
-max(model.glmnet2[["results"]][["ROC"]])
+# Glmnet places constraints on coeff to prevent overfitting, fits a glm via maximum likelihood
+
+# Ridge (0) or Lasso (1)
+model.glmnet <- train(
+  Target ~., 
+  heart,
+  metric = "ROC",
+  tuneGrid = tune.grid,
+  method = "glmnet",
+  trControl = myControl,
+  preProcess = "medianImpute"
+)
+
+
+plot(model.glmnet)
+model.glmnet
+#max(model.glmnet[["results"]][["ROC"]])
 ```
 
-**Comment HERE** Lasso vs Ridge regression, max ROC & ROC explain(?)
 
 
 
@@ -491,7 +457,7 @@ max(model.glmnet2[["results"]][["ROC"]])
 model.0 <- glm(Target ~ 1, data = heart, family ="binomial")
 model.1 <- glm(Target ~ . -Slope, data = heart, family = "binomial")
 
-# step(model.0 , scope = formula(model.1), direction="forward", k = 2)
+ step(model.0 , scope = formula(model.1), direction="forward", k = 2)
 # formula = Target ~ ChestPain + Thalassemia + MajorVessels + 
 #    Oldpeak + ExerciseIndusedAngina + Gender + MaxHeartRateAchivied + 
 #    Cholestrol + RestingBloodPressure + RestingECG
