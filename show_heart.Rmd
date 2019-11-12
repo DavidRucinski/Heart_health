@@ -346,8 +346,11 @@ validate_prob <- predict(model, validate, type = "response")
 validate_predicted <- validate_prob > 0.5
 # Compare the actual & predicted performance visually using a table
 
-table(validate_actual, validate_predicted)
+# table(validate_actual, validate_predicted)
 
+
+
+ap.list <- matrix(nrow = 5, ncol = 2)
 
 for(i in 1:5){
   m <- cv_models_lr$model[[i]]
@@ -358,40 +361,25 @@ for(i in 1:5){
 
   v_predicted <- v_prob > 0.5
 
-  
-  print(table(v_actual, v_predicted))
-  
-  print("**Accuracy**")
-  print(Metrics::accuracy(v_actual, v_predicted))
-  print("**Precision**")
-  print(Metrics::precision(v_actual, v_predicted))
-  
+
+               print(table(v_actual, v_predicted))
 
   
+  ap.list[i,1] = Metrics::accuracy(v_actual, v_predicted)
+  ap.list[i,2] = Metrics::precision(v_actual, v_predicted)
+  
+            if (i == 5){
+              ap = apply(ap.list, 2, mean)
+              print("Mean Accuracy")
+              print(ap[1])
+              print("Mean Precision")
+              print(ap[2])
+              }
 }
 
-"list all acc and precision, then mean"
 ```
-
+*Confusion matrix of all the logistic regression models*
 Using a logistic regression model to predict heart disease, the metrics of interest will be accuracy and precision. We would like to know who does and does not have heart disease, as well as how correct that true classification is.
-
-
-**Accuracy**
-```{r}
-Metrics::accuracy(validate_actual, validate_predicted)
-```
-
-
-**Precision**
-```{r}
-Metrics::precision(validate_actual, validate_predicted)
-```
-
-
-**Recall**
-```{r}
-Metrics::recall(validate_actual, validate_predicted)
-```
 
 
 *Mean Recall of training models*
