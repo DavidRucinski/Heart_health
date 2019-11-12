@@ -1,11 +1,11 @@
 ---
-title: "Example"
+title: "Healthy Hearts"
 author: "David Rucinski"
 date: "November 7, 2019"
 output:
   html_document:
     theme: cerulean
-    highlight: espresso
+    highlight: textmate
     toc: true
     toc_float: false
     toc_depth: 4
@@ -18,6 +18,9 @@ output:
 knitr::opts_chunk$set(comment = NA)
 
 #   R version 3.6.1 “Action of the Toes” 
+
+# "cerulean", "journal", "flatly", "darkly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+# "tango", "pygments", "kate", "monochrome", "espresso", "zenburn", "haddock", "breezedark", "textmate"
 ```
 
 ##Packages
@@ -37,7 +40,7 @@ library(ggthemes)    #theme_
 
 ##Data
 ###Importing
-```{r Reading in Data}
+```{r Reading in Data, background='green'}
 heart <- fread("heart.csv", header = TRUE)
 heart.c <- fread("heart.csv", header = TRUE)
 
@@ -52,6 +55,7 @@ glimpse(heart)
 list_names <- c("Age" , "Gender", "ChestPain", "RestingBloodPressure", "Cholestrol", "FastingBloodSugar", "RestingECG", "MaxHeartRateAchivied", "ExerciseIndusedAngina", "Oldpeak", "Slope", "MajorVessels", "Thalassemia", "Target")
 
 colnames(heart) <- list_names
+colnames(heart.c) <- list_names
 
 ```
 
@@ -148,7 +152,6 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
 
 
 ##Modeling
-*Problem: Classification*
 ###Training Data
 ```{r Training data}
 levels(heart$Target) <- make.names(levels(factor(heart$Target)))
@@ -283,13 +286,16 @@ test_predicted <- predict(best_model, testing_data, type = "response")$predictio
 
 mae(test_actual, test_predicted)
 ```
-
+\
+\
 
 **Accuracy**
 Measures how well the model predicted both TRUE and FALSE classes.
 ```{r}
 Metrics::accuracy(test_actual,test_predicted)
 ```
+\
+\
 
 **Precision**
 Calculates how often the model is correct at the TRUE class."
@@ -319,7 +325,7 @@ model_rf <- train(
 ```
 
 
->>> Only first model
+
 
 ###Logistic Regression - Cross-Validated Models
 ```{r Logistic Regression}
@@ -379,8 +385,9 @@ for(i in 1:5){
 
 ```
 *Confusion matrix of all the logistic regression models*
+\
 Using a logistic regression model to predict heart disease, the metrics of interest will be accuracy and precision. We would like to know who does and does not have heart disease, as well as how correct that true classification is.
-
+\
 
 *Mean Recall of training models*
 ```{r}
@@ -401,9 +408,10 @@ cv_perf_recall <- cv_prep_lr %>%
 mean(cv_perf_recall$validate_recall)
 ```
 
-
-
-
+\
+\
+\
+\
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -508,6 +516,14 @@ for (i in 1:5){
 ```
 
 
+\
+\
+\
+\
+\
+\
+\
+\
 
 
 
