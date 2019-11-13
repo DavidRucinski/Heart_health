@@ -148,10 +148,11 @@ heart[, .N, by = .(Age, Target, Gender)] %>%
   theme_stata()
   
 
-
 ```
 
 
+
+*Dotplot and histogram*
 ```{r, fig.width = 10, fig.height = 6, message = FALSE, warning=FALSE}
 heart %>% 
   ggplot(aes(x=Age, y=Cholestrol, col = Gender)) + 
@@ -163,6 +164,17 @@ heart %>%
   theme(legend.title = element_blank(),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank()) 
+
+
+
+heart %>% 
+  ggplot(aes(x=Age)) + 
+  geom_histogram( fill = "purple", bins = 10) + 
+  facet_wrap(~Target) + 
+  theme_grey() + 
+  labs(title = "Age Distribution", subtitle = "By Heart Health", caption = "Heart Disease UCI from Kaggle") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+ # facet_grid(Gender ~ Target, scales = "free")
 ```
 
 
