@@ -23,6 +23,10 @@ knitr::opts_chunk$set(comment = NA)
 # "tango", "pygments", "kate", "monochrome", "espresso", "zenburn", "haddock", "breezedark", "textmate"
 ```
 
+## **Objective**
+To showcase and practice machine learning techniques and visualizations.
+
+
 ##Packages
 ```{r packages, message = FALSE, warning=FALSE}
 library(data.table)  #fread()
@@ -38,7 +42,11 @@ library(broom)       #map()
 library(ggthemes)    #theme_
 ```
 
-##Data
+## **Data**
+
+Source:
+The data comes from [kaggle](https://www.kaggle.com/ronitf/heart-disease-uci) where a user had subset the data from the [UCI](https://archive.ics.uci.edu/ml/datasets/Heart+Disease) machine learning repository.
+
 ###Importing
 ```{r Reading in Data, background='green'}
 heart <- fread("heart.csv", header = TRUE)
@@ -86,7 +94,7 @@ glimpse(heart)
 
 
 
-##Visuals
+## **Visuals**
 ###Correlation Plot
 ```{r, fig.width=12, fig.height=10, echo=FALSE}
 
@@ -179,7 +187,7 @@ heart %>%
 
 
 
-##Modeling
+## **Modeling**
 ###Training Data
 ```{r Training data}
 levels(heart$Target) <- make.names(levels(factor(heart$Target)))
