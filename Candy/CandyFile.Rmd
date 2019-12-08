@@ -286,5 +286,5 @@ write.csv(Candy_2015_clean, file = "CandyData_2015_clean.csv", row.names = FALSE
 
   <br>
 
-[CandayData_2015.csv](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean.csv)
+[CandayData_2015.csv](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean)
 </p>
