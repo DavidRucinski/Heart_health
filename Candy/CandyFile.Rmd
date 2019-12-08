@@ -1,0 +1,290 @@
+---
+title: "Candy Clean-up"
+author: "David Rucinski"
+date: "2019 December 8th"
+output:
+  html_document:
+    theme: sandstone
+    highlight: pygments
+    toc: true
+    toc_float: false
+    toc_depth: 4
+    df_print: kable
+    code_folding: show
+    includes:
+      in_header: header.html
+
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 14px;
+}
+code.r{ /* Code block */
+    font-size: 14px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 15px;
+}  
+
+div.green { background-color:#b4eca6; border-radius: 5px; padding: 20px;}
+
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+##Packages
+
+```{r packages, message = FALSE, warning=FALSE}
+
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(plyr) # revalue()
+
+library(readxl)
+library(DataExplorer) #Mhm
+
+library(kableExtra)
+```
+
+## Cleaning Data {.tabset .tabset-fade .tabset-pills}
+
+### Data
+<div class = "green">
+Let's take a look at the data, see what columns we have.
+</div>
+```{r}
+ 
+# CandyData_2014 <- read_excel("CandyData-2014.xlsx")
+# glimpse(CandyData_2014)
+# 
+# tail(CandyData_2014)
+# CandyData_2014 <- CandyData_2014[-87,] #Last row looks to be the total, may use this for proportions but for now, out.
+# 
+# names(CandyData_2014)
+
+
+CandyData_2015 <- read_excel("CandyData-2015.xlsx")
+head(names(CandyData_2015), 7)
+tail(names(CandyData_2015), 7)
+```
+<div class = "green">
+All the columns that have square brackets will be annoying to refer to, they also look a bit messy in the output. Let's adjust this by just removing them.
+</div>
+
+### Preprocessing
+
+```{r colnames clarity of variables}
+
+
+# Removing '[]' from variable names since it will be a pain to refer to them
+colnames(CandyData_2015) <- gsub("\\[|\\]", "", names(CandyData_2015))
+head(names(CandyData_2015), 7)
+tail(names(CandyData_2015), 7)
+```
+<div class = "green">
+That looks better. Let's take a look at the structure of our data and then onto the first variable (ignoring the timestamp), 'How old are you?' to see what kind of values we have.
+</div>
+
+
+```{r Viewing_01}
+knitr::kable(head(CandyData_2015)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  scroll_box(width = "900px", height = "400px")
+
+
+glimpse(CandyData_2015)
+
+```
+
+  <p>
+<div class = "green">
+So other than the timestamp as a date class, everything is a string of characters **including** the age variable.
+</div>
+
+  <br>
+
+<div class = "green">
+Let's take a glance at the age responses, we can do a count for frequency.
+</div>
+  </p>
+  
+```{r Viewing_02}
+
+
+count(CandyData_2015$`How old are you?`) %>%
+  arrange(desc(freq)) %>%
+  knitr::kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  row_spec(100, bold = T, color = "white", background = "#D7261E") %>%
+  scroll_box(width = "900px", height = "400px")
+
+```
+  <p>
+<div class = "green">
+**Hm..** 200 NA values, a lot of text, and someone thought it would be funny to put 8103 digits of pi. 
+</div>
+
+  <br>
+
+
+<div class = "green">
+Though this technique may miss the '5 months' and return someone who is '5', the person filling out the survey would not be that age. If needed to change that entry into an invalid one [0.5] it will be easy since there should only be a two values at '5'.
+</div>
+  </p>
+
+
+
+```{r}
+# Print
+unique( as.numeric(
+    gsub("[^0-9.]", "", 
+       substr(CandyData_2015$`How old are you?`,1,3)
+         )
+       )
+    )
+
+# Saving object
+CandyData_2015$`How old are you?` <- 
+  as.numeric(
+   gsub("[^0-9.]", "", 
+       substr(CandyData_2015$`How old are you?`,1,3)
+       )
+  )
+```
+  <p>
+<div class = "green">
+These are the **unique** values after removing the text and taking the first **3** characters that are numeric in the response including the decimal. Which means anyone who answered as 40.5 or 40.3 would be reduced to 40.0, including responses where something like '46 but taking 11 yr old' will result in 46.0. 
+</div>
+
+  <br>
+
+<div class = "green">
+*(I doubt anyone over 100 would want to fill out a survey like this so we will use it as an end point)*
+Any values exceeding 100  or NA can be seen as an invalid response, but there are some people who may not wish to actually share their actual age and some given the option to joke will do so. Though the age may be invalid the rest of the survey *may* but filled out honestly, and a comparison analysis could be done on that. Therefore any invalid age response will be changed to 0.5 to keep track of further analysis.
+</div>
+  </p>
+
+```{r}
+
+
+# test <- CandyData_2015$`How old are you?`
+# 
+# test[is.na(test)] = 0.5 
+# unique(test)
+# 
+# count(test) %>%
+#   arrange(desc(freq)) %>%
+#   knitr::kable()
+# 
+# 
+# 
+# for (i in 1:length(test)){
+#   if (test[i] > 100){
+#     test[i] = 0.5
+#   } 
+# }
+
+
+
+
+CandyData_2015$`How old are you?`[is.na(CandyData_2015$`How old are you?`)] = 0.5 
+# to handle the NA values I'll give them a value of 0.5 to recognize they are NA or any entry other than numeric
+
+# also for any unlikely ages i.e. over 100 will be registered as NA/0.5, some people may not like giving their age. Though the age may be invalid their survey may still be.
+for (i in 1:length(CandyData_2015$`How old are you?`)){
+  if (CandyData_2015$`How old are you?`[i] > 100 || CandyData_2015$`How old are you?`[i] < 1){
+    CandyData_2015$`How old are you?`[i] = 0.5
+  } 
+}
+
+
+count(CandyData_2015$`How old are you?`) %>%
+  arrange(desc(freq)) %>%
+  knitr::kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), position = "left", full_width = FALSE)
+# it seems a '0.6' and '0.0' has slipped by -> adjust if statement to include <1
+```
+
+<div class = "green">
+277 is now our total for invalid age responses. That's still pretty good considering the sample. Since all the variables that refer to candy is **NA/DESPAIR/JOY** we can change that to numeric or as a factor to manage it better.
+</div>
+
+
+
+```{r, fig.width=16, fig.height=18}
+
+
+
+
+# For all Candy change to numeric (to sum and play around)
+#
+# JOY     = +1
+# NA      =  0
+# DESPAIR = -1
+#
+# Can create a net value and sum
+
+names(CandyData_2015[,97:124])
+
+
+plot_missing(CandyData_2015)
+# Most of the questions with "Please..." have missing data and the rest there is nothing of value 
+# to me so I will exclude it. It measures degrees of separation from famous people? 
+# Also will drop the Taylor Swift question as it's 100% missing values.
+CandyData_2015 %>% select(contains("Please"), contains("Taylor")) %>% names()
+
+
+Candy_2015_clean <- CandyData_2015 %>% select(-contains("Please"), -contains("Taylor"))
+plot_missing(Candy_2015_clean)
+
+```
+
+<div class = "green">
+Although we still have some missing values, the degree of missing values is "OK" so let's export this data. Some functions will work better on NA, for this reason else where in the data where there is NA it will be left as is.
+</div>
+
+
+
+```{r , warning=FALSE, message = FALSE}
+
+plot_bar(Candy_2015_clean %>%
+           select(-contains("Guess"), -contains("___"))
+         )
+
+```
+
+```{r }
+library(DT)
+datatable(head(Candy_2015_clean), rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T) )
+
+```
+
+
+### Export
+
+```{r eval=FALSE}
+library("openxlsx")
+write.xlsx(Candy_2015_clean, file = "CandyData_2015_clean.xlsx")
+write.csv(Candy_2015_clean, file = "CandyData_2015_clean", row.names = FALSE)
+
+# Since some functions deal with NA a bit differently I won't change all of them, though a simple
+# dt[is.na(dt)] <- value
+# in R can change all the na values to 0, 0.5, MEH etc.
+
+```
+
+  <p>
+[CandayData_2015.xlsx](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean.xlsx)
+
+  <br>
+
+[CandayData_2015.csv](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean.csv)
+</p>
