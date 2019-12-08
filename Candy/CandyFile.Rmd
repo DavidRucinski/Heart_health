@@ -270,10 +270,10 @@ datatable(head(Candy_2015_clean), rownames = FALSE, filter="top", options = list
 
 ### Export
 
-```{r eval=FALSE}
+```{r }
 library("openxlsx")
 write.xlsx(Candy_2015_clean, file = "CandyData_2015_clean.xlsx")
-write.csv(Candy_2015_clean, file = "CandyData_2015_clean", row.names = FALSE)
+write.csv(Candy_2015_clean, file = "CandyData_2015_clean.csv", row.names = FALSE)
 
 # Since some functions deal with NA a bit differently I won't change all of them, though a simple
 # dt[is.na(dt)] <- value
