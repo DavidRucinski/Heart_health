@@ -6,7 +6,7 @@ For more information about the [data](https://www.kaggle.com/johnsmith88/heart-d
 #### Objective
 Practice machine learning techniques (regressions/ supervised learning) and ggplot2 visualizations. 
 
-========================================||========================================
+====||====
 
 ### Candy Clean
 
