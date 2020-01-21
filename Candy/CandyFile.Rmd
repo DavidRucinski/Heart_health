@@ -19,13 +19,13 @@ output:
 <style type="text/css">
 
 body{ /* Normal  */
-      font-size: 14px;
+      font-size: 15px;
 }
 code.r{ /* Code block */
-    font-size: 14px;
+    font-size: 15px;
 }
 pre { /* Code block - determines code spacing between lines */
-    font-size: 15px;
+    font-size: 16px;
 }  
 
 div.green { background-color:#b4eca6; border-radius: 5px; padding: 20px;}
@@ -37,6 +37,12 @@ div.green { background-color:#b4eca6; border-radius: 5px; padding: 20px;}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+##Objective
+Clean up this somewhat messy data, and try some html stylizing. 
+
+Variable names have square brackets, I would like to remove that and any column with too much missing data.
+
+The 'Age' variable had all of its input as a **character/string** class/type and thus not numeric. With no limit people had answered with "old enough" , "too old" , ">39" , "-" , "30+" , "37," , or even three pages worth in digits of pi. With no uniform way to correct it, this was the main problem to solve.
 
 
 ##Packages
@@ -54,7 +60,10 @@ library(DataExplorer) #Mhm
 library(kableExtra)
 ```
 
+
 ## Cleaning Data {.tabset .tabset-fade .tabset-pills}
+
+**Note: this is a tab bar**
 
 ### Data
 [CandayData-2015.xlsx](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData-2015.xlsx)
@@ -75,9 +84,10 @@ Let's take a look at the data, see what columns we have.
 CandyData_2015 <- read_excel("CandyData-2015.xlsx")
 head(names(CandyData_2015), 7)
 tail(names(CandyData_2015), 7)
+length(names(CandyData_2015))
 ```
 <div class = "green">
-All the columns that have square brackets will be annoying to refer to, they also look a bit messy in the output. Let's adjust this by just removing them.
+We got 124 variables. All the columns that have square brackets will be annoying to refer to, they also look a bit messy in the output. Let's adjust this by just removing them.
 </div>
 
 ### Preprocessing
@@ -90,15 +100,21 @@ colnames(CandyData_2015) <- gsub("\\[|\\]", "", names(CandyData_2015))
 head(names(CandyData_2015), 7)
 tail(names(CandyData_2015), 7)
 ```
+  <p>
 <div class = "green">
 That looks better. Let's take a look at the structure of our data and then onto the first variable (ignoring the timestamp), 'How old are you?' to see what kind of values we have.
 </div>
 
+  <br>
 
+<div class = "green">
+A scrollable window for the first 50 records
+</div>
+  </p>
 ```{r Viewing_01}
-knitr::kable(head(CandyData_2015)) %>%
+knitr::kable(head(CandyData_2015, 50)) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
-  scroll_box(width = "900px", height = "400px")
+  scroll_box(width = "900px", height = "600px")
 
 
 glimpse(CandyData_2015)
@@ -281,11 +297,13 @@ write.csv(Candy_2015_clean, file = "CandyData_2015_clean.csv", row.names = FALSE
 # in R can change all the na values to 0, 0.5, MEH etc.
 
 ```
-
+**File for download:**
   <p>
 [CandayData_2015_clean.xlsx](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean.xlsx)
 
   <br>
+  
+**Raw CSV:**
 
 [CandayData_2015_clean.csv](https://raw.githubusercontent.com/DavidRucinski/Heart_health/master/Candy/CandyData_2015_clean)
 </p>
