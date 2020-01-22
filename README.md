@@ -4,14 +4,13 @@
 For more information about the [data](https://www.kaggle.com/johnsmith88/heart-disease-dataset)
 
 #### Objective
-Practice machine learning techniques (regressions/ supervised learning) and ggplot2 visualizations. 
+Practice machine learning techniques (regressions/ supervised learning) and ggplot2 visualizations. With the information given this dataset has a variable 'Target' which indicates the presence of heart disease at '1' and no heart disease at '0'. Trying out different models and see what I can come up with. Along the way I will do some exploratory data analysis (EDA) via visuals to see if anything really sticks out, and try different styles for those graphs. 
+
+The data will need some formatting/cleaning as far as variable names and class/type.
+
+*Note: Some assumptions will be ignored for the sake of just practicing code in R, thus no interpretation will be given for results*
 
 ====||====
 
-### Candy Clean
-
-#### Objective
-Clean up the data a little bit, everything is brought in as a string more or less. Thus the 'Age' variable has a lot non-numeric inputs, the main problem I tackle with this data. Labels are messy, there is a lot of missing data // mislabelled data. Export as a spreadsheet document. 
-
-Test html output and features, such as scrollable windows and tabs.
+##### Candy Clean in the folder with its own readme
 
